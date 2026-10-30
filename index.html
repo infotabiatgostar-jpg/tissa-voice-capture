@@ -1,651 +1,875 @@
 <!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
-
 <head>
-
+  <base target="_top">
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta name="theme-color" content="#1769aa">
-
-  <title>ثبت گفتار تیسا</title>
-
   <style>
-
     * { box-sizing: border-box; }
 
     body {
-
       margin: 0;
-
-      padding: 18px;
-
-      background: #f5f6f8;
-
-      color: #202124;
-
-      font-family: Arial, Tahoma, sans-serif;
-
-      font-size: 16px;
-
-      line-height: 1.8;
-
-    }
-
-    main { max-width: 680px; margin: 0 auto; }
-
-    h1 { font-size: 22px; margin: 0 0 6px; }
-
-    p { margin: 0 0 14px; color: #5f6368; }
-
-    .panel {
-
       padding: 16px;
-
-      background: white;
-
-      border-radius: 12px;
-
-      box-shadow: 0 1px 4px #00000012;
-
+      background: #f5f6f8;
+      color: #202124;
+      font-family: Arial, Tahoma, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
     }
 
-    textarea, input {
-
-      width: 100%;
-
-      padding: 12px;
-
-      border: 1px solid #c9cdd2;
-
-      border-radius: 8px;
-
-      font: inherit;
-
-    }
-
-    textarea { min-height: 190px; line-height: 1.8; }
-
-    button {
-
-      min-height: 48px;
-
-      padding: 10px 14px;
-
-      margin: 8px 0 0;
-
-      border: 0;
-
-      border-radius: 8px;
-
-      font: inherit;
-
-      font-weight: bold;
-
-      cursor: pointer;
-
-    }
-
-    button:disabled { opacity: .55; cursor: not-allowed; }
-
-    .primary { background: #1769aa; color: white; }
-
-    .danger { background: #b3261e; color: white; }
-
-    .secondary { background: #e8eaed; color: #202124; }
-
-    .actions {
-
-      display: grid;
-
-      grid-template-columns: 1fr 1fr;
-
-      gap: 8px;
-
-    }
-
-    #status {
-
-      padding: 10px;
-
-      margin-top: 12px;
-
-      border-radius: 8px;
-
-      white-space: pre-wrap;
-
-      overflow-wrap: anywhere;
-
-    }
-
-    .info { color: #174ea6; background: #e8f0fe; }
-
-    .success { color: #137333; background: #e6f4ea; }
-
-    .error { color: #b3261e; background: #fce8e6; }
-
-    .small { margin-top: 12px; font-size: 13px; color: #666; }
+    h2 { margin: 0 0 6px; font-size: 21px; }
+    .intro { color: #5f6368; margin: 0 0 18px; }
 
     label {
-
       display: block;
-
       font-weight: bold;
-
-      margin: 16px 0 6px;
-
+      margin: 14px 0 5px;
     }
 
-  </style>
+    input, select, textarea {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #c9cdd2;
+      border-radius: 8px;
+      background: white;
+      color: #202124;
+      font: inherit;
+    }
 
+    textarea {
+      min-height: 105px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 8px;
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    .primary { background: #1769aa; color: white; }
+    .save { background: #188038; color: white; }
+    .secondary { background: #e8eaed; color: #202124; }
+
+    .panel {
+      background: white;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px #00000012;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    #entryFields { display: none; }
+
+    #status {
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .success { background: #e6f4ea; color: #137333; }
+    .error { background: #fce8e6; color: #b3261e; }
+    .info { background: #e8f0fe; color: #174ea6; }
+
+    .warning {
+      font-size: 13px;
+      color: #555;
+      margin-top: 14px;
+    }
+
+    .voiceControls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .voiceControls button {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    #startVoiceBtn.listening {
+      background: #b3261e;
+    }
+  </style>
 </head>
 
 <body>
+  <h2>ثبت صوتی تیسا</h2>
 
-<main>
+  <p class="intro">
+    فارسی صحبت کن؛ صدای تو با هوش مصنوعی به متن تبدیل می‌شود.
+    متن را بررسی کن، سپس اطلاعات را تحلیل و در CRM ثبت کن.
+  </p>
 
-  <h1>ثبت گفتار تیسا</h1>
+  <div class="panel">
+    <label for="pin">رمز ورود</label>
+    <input id="pin" type="password"
+      autocomplete="current-password"
+      placeholder="رمز ثبت صوتی" required>
 
-  <p>صحبت کن؛ صدایت به سرویس تبدیل گفتار فارسی فرستاده می‌شود و متن در همین صفحه نمایش داده خواهد شد.</p>
+    <label for="transcript">متن پیاده‌شده مکالمه</label>
+    <textarea id="transcript"
+      placeholder="متن فارسی را اینجا Paste کن..."></textarea>
 
-  <section class="panel">
-
-    <label for="voiceToken">رمز اختصاصی ثبت صوت</label>
-
-    <input
-
-      id="voiceToken"
-
-      type="password"
-
-      autocomplete="off"
-
-      placeholder="رمز TISSA_VOICE_TOKEN"
-
-    >
-
-    <div class="actions">
-
-      <button id="startBtn" class="primary" type="button">
-
-        🎙 شروع ضبط
-
+    <div class="voiceControls">
+      <button type="button" class="primary" id="startVoiceBtn">
+        🎙 شروع صحبت
       </button>
 
-      <button id="stopBtn" class="danger" type="button" disabled>
-
-        ⏹ پایان ضبط
-
+      <button type="button" class="secondary"
+        id="stopVoiceBtn" disabled>
+        ⏹ پایان صحبت
       </button>
-
     </div>
 
-    <button id="transcribeBtn" class="primary" type="button" disabled style="width:100%">
+    <div class="hint" id="speechHint">
+      برای ضبط صدا، شروع صحبت را بزن و بعد از اتمام،
+      پایان صحبت را انتخاب کن.
+    </div>
 
-      تبدیل صدا به متن فارسی
-
+    <button type="button" class="primary" id="prepareBtn">
+      تحلیل متن و آماده‌سازی
     </button>
 
-    <label for="transcript">متن تشخیص‌داده‌شده</label>
+    <div class="hint">
+      این دکمه متن را به قسمت شرح مکالمه منتقل می‌کند.
+      نام مشتری و نتیجه را خودت بررسی و تکمیل کن.
+    </div>
+  </div>
 
-    <textarea
+  <div class="panel" id="entryFields">
+    <form id="entryForm">
 
-      id="transcript"
+      <label for="customer">نام مشتری در CRM</label>
+      <input id="customer" type="text" required
+        placeholder="نام مشتری را مطابق CRM وارد کن">
 
-      placeholder="متن تبدیل‌شده اینجا نمایش داده می‌شود؛ می‌توانی آن را اصلاح کنی."
+      <label for="activity">نوع فعالیت</label>
+      <select id="activity" required>
+        <option value="">نوع فعالیت را انتخاب کن</option>
+        <option value="تماس">تماس</option>
+        <option value="پیگیری">پیگیری</option>
+        <option value="یادداشت">یادداشت</option>
+      </select>
 
-    ></textarea>
+      <label for="result">نتیجه تماس</label>
+      <input id="result" type="text" list="resultOptions"
+        placeholder="نتیجه را انتخاب یا تایپ کن">
 
-    <div class="actions">
+      <datalist id="resultOptions">
+        <option value="سفارش قطعی">
+        <option value="قول خرید">
+        <option value="قیمت خواست">
+        <option value="نمونه خواست">
+        <option value="ارسال اطلاعات محصول">
+        <option value="گفت بعدا تماس بگیرید">
+        <option value="خرید از رقیب">
+        <option value="فعلاً نیاز ندارد">
+        <option value="پاسخ نداد">
+        <option value="شماره اشتباه / خاموش">
+        <option value="مخالفت کرد">
+      </datalist>
 
-      <button id="sendBtn" class="primary" type="button">
+      <label for="details">شرح مکالمه</label>
+      <textarea id="details" required
+        placeholder="خلاصه مکالمه، درخواست مشتری و نکات مهم"></textarea>
 
-        ارسال متن به صفحه تیسا
+      <label for="nextAction">اقدام بعدی</label>
+      <input id="nextAction" type="text"
+        placeholder="مثلاً ارسال قیمت یا پیگیری سفارش">
 
+      <label for="nextDate">تاریخ اقدام بعدی (شمسی)</label>
+      <input id="nextDate" type="text" dir="ltr"
+        placeholder="اگر تاریخ مشخص نیست، خالی بگذار">
+
+      <button type="submit" class="save" id="saveBtn">
+        ثبت در CRM
       </button>
 
-      <button id="copyBtn" class="secondary" type="button">
-
-        کپی متن
-
+      <button type="button" class="secondary" id="clearBtn">
+        پاک‌کردن فرم برای ثبت بعدی
       </button>
 
-    </div>
+    </form>
+  </div>
 
-    <div id="status" class="info" role="status" aria-live="polite">
+  <div id="status" role="status"
+    aria-live="polite" hidden></div>
 
-      ابتدا رمز ثبت صوت را وارد کن و سپس شروع ضبط را بزن.
+  <p class="warning">
+    قبل از ثبت، نام مشتری و متن را بررسی کن. اطلاعات فقط پس از زدن
+    «ثبت در CRM» و تأیید نهایی ارسال می‌شوند. در میزبانی GitHub Pages،
+    تبدیل صدا فعال است؛ تحلیل و ثبت CRM تا زمان اتصال مسیر سروری
+    آن‌ها فعال نیست.
+  </p>
 
-    </div>
+  <script>
 
-    <div class="small">
+    // آدرس Worker مربوط به تیسا
+    const API_URL =
+      'https://royal-surf-a674.info-tabiatgostar.workers.dev';
 
-      فایل صوتی برای تبدیل به متن به سرور تیسا و سپس سرویس 1xAi فرستاده می‌شود.
+    const $ = id => document.getElementById(id);
 
-      متن قبل از ارسال به CRM قابل بازبینی و اصلاح است.
-
-    </div>
-
-  </section>
-
-</main>
-
-<script>
-
-(function () {
-
-  const $ = id => document.getElementById(id);
-
-  const API_URL =
-  'https://royal-surf-a674.info-tabiatgostar.workers.dev';
-
-
-  let mediaRecorder = null;
-
-  let audioStream = null;
-
-  let audioChunks = [];
-
-  let audioBlob = null;
-
-  function status(message, type) {
-
-    $('status').textContent = message;
-
-    $('status').className = type || 'info';
-
-  }
-
-  function getVoiceToken() {
-
-    return $('voiceToken').value.trim();
-
-  }
-
-  function setRecording(on) {
-
-    $('startBtn').disabled = on;
-
-    $('stopBtn').disabled = !on;
-
-    $('transcribeBtn').disabled = on || !audioBlob;
-
-    $('startBtn').textContent =
-
-      on ? '🎙 در حال ضبط...' : '🎙 شروع ضبط';
-
-  }
-
-  function releaseMicrophone() {
-
-    if (audioStream) {
-
-      audioStream.getTracks().forEach(track => track.stop());
-
-      audioStream = null;
-
+    function getAppsScriptRunner() {
+      if (
+        window.google &&
+        window.google.script &&
+        window.google.script.run
+      ) {
+        return window.google.script.run;
+      }
+      return null;
     }
 
-  }
-
-  $('startBtn').addEventListener('click', async function () {
-
-    if (!getVoiceToken()) {
-
-      status('ابتدا رمز اختصاصی ثبت صوت را وارد کن.', 'error');
-
-      $('voiceToken').focus();
-
-      return;
-
+    function showStatus(message, type) {
+      const box = $('status');
+      box.textContent = message;
+      box.className = type || 'info';
+      box.hidden = false;
     }
 
-    if (!navigator.mediaDevices ||
+    // ===== ضبط صدا و تبدیل گفتار از طریق Cloudflare Worker =====
 
+    let mediaRecorder = null;
+    let mediaStream = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    function resetVoiceControls() {
+      $('startVoiceBtn').disabled = false;
+      $('startVoiceBtn').classList.remove('listening');
+      $('startVoiceBtn').textContent = '🎙 شروع صحبت';
+      $('stopVoiceBtn').disabled = true;
+      isRecording = false;
+    }
+
+    function stopVoiceStream() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+        mediaStream = null;
+      }
+    }
+
+    function startVoiceInput() {
+
+      if (isRecording) return;
+
+      if (
+        !navigator.mediaDevices ||
         !navigator.mediaDevices.getUserMedia ||
-
-        !window.MediaRecorder) {
-
-      status('این مرورگر امکان ضبط صدا را فراهم نکرده است. صفحه را با Safari و از طریق HTTPS باز کن.', 'error');
-
-      return;
-
-    }
-
-    try {
-
-      status('در حال درخواست اجازه میکروفون...', 'info');
-
-      audioStream = await navigator.mediaDevices.getUserMedia({
-
-        audio: true
-
-      });
-
-      let mimeType = '';
-
-      const supportedTypes = [
-
-        'audio/mp4',
-
-        'audio/webm;codecs=opus',
-
-        'audio/webm'
-
-      ];
-
-      for (const type of supportedTypes) {
-
-        if (MediaRecorder.isTypeSupported(type)) {
-
-          mimeType = type;
-
-          break;
-
-        }
-
+        typeof MediaRecorder === 'undefined'
+      ) {
+        showStatus(
+          'این مرورگر امکان ضبط مستقیم صدا را ندارد. ' +
+          'صفحه را با Safari یا مرورگر به‌روز و از لینک HTTPS باز کن.',
+          'error'
+        );
+        return;
       }
 
-      const options = mimeType ? { mimeType } : {};
+      showStatus(
+        'در حال درخواست دسترسی به میکروفون...',
+        'info'
+      );
 
-      mediaRecorder = new MediaRecorder(audioStream, options);
+      navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      })
+      .then(function(stream) {
 
-      audioChunks = [];
+        mediaStream = stream;
+        recordedChunks = [];
 
-      audioBlob = null;
+        let selectedMime = '';
 
-      mediaRecorder.ondataavailable = function (event) {
+        const mimeCandidates = [
+          'audio/mp4',
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/ogg;codecs=opus'
+        ];
 
-        if (event.data && event.data.size > 0) {
-
-          audioChunks.push(event.data);
-
+        if (
+          typeof MediaRecorder.isTypeSupported === 'function'
+        ) {
+          for (let i = 0; i < mimeCandidates.length; i++) {
+            if (
+              MediaRecorder.isTypeSupported(mimeCandidates[i])
+            ) {
+              selectedMime = mimeCandidates[i];
+              break;
+            }
+          }
         }
 
-      };
+        try {
+          mediaRecorder = selectedMime
+            ? new MediaRecorder(stream, {
+                mimeType: selectedMime
+              })
+            : new MediaRecorder(stream);
 
-      mediaRecorder.onstop = function () {
+        } catch (error) {
 
-        audioBlob = new Blob(audioChunks, {
+          stopVoiceStream();
 
-          type: mediaRecorder.mimeType || mimeType || 'audio/mp4'
+          throw new Error(
+            'مرورگر نتوانست ضبط صدا را شروع کند.'
+          );
+        }
 
-        });
+        mediaRecorder.ondataavailable = function(event) {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
 
-        releaseMicrophone();
+        mediaRecorder.onerror = function() {
+          showStatus(
+            'در هنگام ضبط صدا خطایی رخ داد.',
+            'error'
+          );
+        };
 
-        setRecording(false);
+        mediaRecorder.onstop = function() {
 
-        $('transcribeBtn').disabled = false;
+          const actualMime =
+            mediaRecorder.mimeType ||
+            (
+              recordedChunks.length
+                ? recordedChunks[0].type
+                : ''
+            ) ||
+            'audio/mp4';
 
-        status(
+          const audioBlob = new Blob(
+            recordedChunks,
+            { type: actualMime }
+          );
 
-          'ضبط پایان یافت. حالا روی «تبدیل صدا به متن فارسی» بزن.',
+          stopVoiceStream();
 
+          mediaRecorder = null;
+          isRecording = false;
+
+          if (!audioBlob.size) {
+            resetVoiceControls();
+            showStatus(
+              'صدایی ضبط نشد. دوباره تلاش کن.',
+              'error'
+            );
+            return;
+          }
+
+          uploadTissaAudio(audioBlob, actualMime);
+        };
+
+        try {
+          mediaRecorder.start();
+        } catch (error) {
+          stopVoiceStream();
+          resetVoiceControls();
+          showStatus(
+            'شروع ضبط صدا ممکن نشد.',
+            'error'
+          );
+          return;
+        }
+
+        isRecording = true;
+
+        $('startVoiceBtn').disabled = true;
+        $('startVoiceBtn').classList.add('listening');
+        $('startVoiceBtn').textContent = '🎙 در حال ضبط...';
+        $('stopVoiceBtn').disabled = false;
+
+        $('speechHint').textContent =
+          'در حال ضبط صدای تو هستیم. پس از پایان صحبت، دکمه پایان صحبت را بزن.';
+
+        showStatus(
+          'میکروفون فعال است؛ فارسی صحبت کن.',
           'success'
-
         );
 
-      };
+      })
+      .catch(function(error) {
 
-      mediaRecorder.onerror = function () {
+        stopVoiceStream();
+        resetVoiceControls();
 
-        releaseMicrophone();
+        let message =
+          'دسترسی به میکروفون برقرار نشد.';
 
-        setRecording(false);
+        if (
+          error &&
+          (
+            error.name === 'NotAllowedError' ||
+            error.name === 'PermissionDeniedError'
+          )
+        ) {
+          message =
+            'مجوز میکروفون داده نشده است. تنظیمات دسترسی میکروفون مرورگر را بررسی کن.';
 
-        status('هنگام ضبط صدا خطایی رخ داد.', 'error');
+        } else if (
+          error &&
+          error.name === 'NotFoundError'
+        ) {
+          message =
+            'میکروفونی در گوشی پیدا نشد.';
 
-      };
+        } else if (
+          error &&
+          error.message
+        ) {
+          message = error.message;
+        }
 
-      mediaRecorder.start();
+        showStatus(message, 'error');
+      });
+    }
 
-      setRecording(true);
+    async function uploadTissaAudio(blob, mimeType) {
 
-      status('میکروفون فعال است؛ صحبت کن. بعد از پایان صحبت، دکمه پایان ضبط را بزن.', 'success');
+      const MAX_AUDIO_BYTES = 18 * 1024 * 1024;
 
-    } catch (err) {
+      if (blob.size > MAX_AUDIO_BYTES) {
+        resetVoiceControls();
+        showStatus(
+          'حجم فایل صوتی زیاد است. لطفاً صدای کوتاه‌تری ضبط کن.',
+          'error'
+        );
+        return;
+      }
 
-      releaseMicrophone();
+      if (!$('pin').value.trim()) {
+        resetVoiceControls();
+        showStatus('ابتدا رمز ورود را وارد کن.', 'error');
+        $('pin').focus();
+        return;
+      }
 
-      setRecording(false);
+      $('startVoiceBtn').disabled = true;
+      $('stopVoiceBtn').disabled = true;
 
-      status(
+      $('speechHint').textContent =
+        'صدای ضبط‌شده در حال ارسال امن به سرور تیسا است...';
 
-        'دسترسی به میکروفون ممکن نشد: ' +
-
-        (err.message || err),
-
-        'error'
-
+      showStatus(
+        'در حال تبدیل صدای فارسی به متن با Whisper...',
+        'info'
       );
 
+      try {
+
+        const dataUrl = await new Promise(function(resolve, reject) {
+
+          const reader = new FileReader();
+
+          reader.onload = function() {
+            resolve(String(reader.result || ''));
+          };
+
+          reader.onerror = function() {
+            reject(new Error('خواندن فایل صوتی ناموفق بود.'));
+          };
+
+          reader.readAsDataURL(blob);
+        });
+
+        const commaIndex = dataUrl.indexOf(',');
+
+        if (commaIndex < 0) {
+          throw new Error('آماده‌سازی فایل صوتی ناموفق بود.');
+        }
+
+        const audioBase64 = dataUrl.substring(commaIndex + 1);
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+
+          body: JSON.stringify({
+            eventType: 'VOICE_TRANSCRIBE',
+            pin: $('pin').value,
+            mimeType: mimeType || blob.type || 'audio/mp4',
+            audioBase64: audioBase64
+          }),
+
+          cache: 'no-store',
+          credentials: 'omit'
+        });
+
+        const responseText = await response.text();
+
+        let result;
+
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          throw new Error(
+            'پاسخ سرور JSON معتبر نیست. کد وضعیت: ' +
+            response.status +
+            '\nابتدا گزارش Worker را بررسی می‌کنیم.'
+          );
+        }
+
+        if (!response.ok || !result || !result.ok) {
+          throw new Error(
+            (result && result.error) ||
+            ('خطای سرور با کد ' + response.status)
+          );
+        }
+
+        const recognizedText = String(result.text || '').trim();
+
+        if (!recognizedText) {
+          throw new Error(
+            'متن قابل تشخیصی از صدای ارسال‌شده دریافت نشد.'
+          );
+        }
+
+        const previousText = $('transcript').value.trim();
+
+        $('transcript').value = previousText
+          ? previousText + '\n' + recognizedText
+          : recognizedText;
+
+        $('speechHint').textContent =
+          'تبدیل انجام شد. متن را بررسی و در صورت نیاز اصلاح کن.';
+
+        showStatus(
+          'تبدیل گفتار فارسی انجام شد. متن را بررسی کن؛ هنوز چیزی در CRM ثبت نشده است.',
+          'success'
+        );
+
+      } catch (error) {
+
+        const message = error && error.message
+          ? error.message
+          : String(error || 'خطای نامشخص');
+
+        $('speechHint').textContent =
+          'تبدیل صدا ناموفق بود؛ پس از بررسی دوباره تلاش کن.';
+
+        showStatus(
+          'تبدیل صدا انجام نشد:\n' + message,
+          'error'
+        );
+
+      } finally {
+        resetVoiceControls();
+      }
     }
 
-  });
+    // شروع ضبط
+    $('startVoiceBtn').addEventListener(
+      'click',
+      startVoiceInput
+    );
 
-  $('stopBtn').addEventListener('click', function () {
+    // پایان ضبط و ارسال برای تبدیل
+    $('stopVoiceBtn').addEventListener(
+      'click',
+      function() {
 
-    if (mediaRecorder &&
+        if (
+          mediaRecorder &&
+          mediaRecorder.state === 'recording'
+        ) {
+          $('stopVoiceBtn').disabled = true;
 
-        mediaRecorder.state !== 'inactive') {
+          $('speechHint').textContent =
+            'ضبط تمام شد؛ فایل در حال آماده‌سازی است...';
 
-      mediaRecorder.stop();
+          mediaRecorder.stop();
+        }
+      }
+    );
 
-      status('در حال پایان ضبط...', 'info');
+    // تحلیل متن
+    $('prepareBtn').addEventListener('click', function() {
 
-    }
+      const transcript = $('transcript').value.trim();
+      const pin = $('pin').value;
 
-  });
+      if (!transcript) {
+        showStatus(
+          'ابتدا متن فارسی مکالمه را وارد کن.',
+          'error'
+        );
+        $('transcript').focus();
+        return;
+      }
 
-  $('transcribeBtn').addEventListener('click', async function () {
+      if (!pin) {
+        showStatus('ابتدا رمز ورود را وارد کن.', 'error');
+        $('pin').focus();
+        return;
+      }
 
-    if (!audioBlob) {
+      const runner = getAppsScriptRunner();
 
-      status('ابتدا یک فایل صوتی ضبط کن.', 'error');
+      if (!runner) {
+        showStatus(
+          'تبدیل صدا از طریق GitHub و Cloudflare انجام می‌شود؛ اما تحلیل هوشمند و ثبت CRM هنوز به مسیر سروری جداگانه در Worker و Apps Script نیاز دارد. فعلاً متن را می‌توانی کپی کنی و در نسخه Apps Script ثبت کنی.',
+          'info'
+        );
+        return;
+      }
 
-      return;
+      const button = $('prepareBtn');
 
-    }
+      button.disabled = true;
+      button.textContent = 'در حال تحلیل متن...';
 
-    if (!getVoiceToken()) {
+      showStatus(
+        'در حال استخراج اطلاعات از متن مکالمه...',
+        'info'
+      );
 
-      status('رمز اختصاصی ثبت صوت وارد نشده است.', 'error');
+      runner
+        .withSuccessHandler(function(response) {
 
-      return;
+          button.disabled = false;
+          button.textContent = 'تحلیل متن و آماده‌سازی';
 
-    }
+          if (!response || !response.ok) {
+            showStatus(
+              'پاسخ تحلیل قابل تأیید نیست. دوباره تلاش کن.',
+              'error'
+            );
+            return;
+          }
 
-    if (audioBlob.size > 20 * 1024 * 1024) {
+          $('customer').value = response.customer || '';
+          $('activity').value = response.activity || '';
+          $('result').value = response.result || '';
+          $('details').value = response.details || transcript;
+          $('nextAction').value = response.nextAction || '';
+          $('nextDate').value = response.nextDate || '';
 
-      status('حجم فایل بیش از 20 مگابایت است. کوتاه‌تر ضبط کن.', 'error');
+          $('entryFields').style.display = 'block';
 
-      return;
+          if (response.warnings && response.warnings.length) {
 
-    }
+            showStatus(
+              'تحلیل اولیه انجام شد. موارد زیر را بررسی و تکمیل کن:\n\n' +
+              '• ' + response.warnings.join('\n• '),
+              'info'
+            );
 
-    $('transcribeBtn').disabled = true;
+          } else {
 
-    $('startBtn').disabled = true;
+            showStatus(
+              'اطلاعات استخراج شد. همه فیلدها را بررسی کن؛ سپس در صورت صحت ثبت کن.',
+              'success'
+            );
+          }
 
-    status('در حال ارسال صدا و تبدیل آن به متن فارسی... لطفاً صبر کن.', 'info');
-
-    try {
-
-      const reader = new FileReader();
-
-      const dataUrl = await new Promise((resolve, reject) => {
-
-        reader.onload = () => resolve(reader.result);
-
-        reader.onerror = reject;
-
-        reader.readAsDataURL(audioBlob);
-
-      });
-
-      const response = await fetch(API_URL, {
-
-        method: 'POST',
-
-        headers: {
-
-          'Content-Type': 'text/plain;charset=utf-8'
-
-        },
-
-        body: JSON.stringify({
-
-          eventType: 'VOICE_TRANSCRIBE',
-
-          voiceToken: getVoiceToken(),
-
-          mimeType: audioBlob.type || 'audio/mp4',
-
-          audioBase64: dataUrl
-
+          $('customer').focus();
         })
 
-      });
+        .withFailureHandler(function(error) {
 
-      if (!response.ok) {
+          button.disabled = false;
+          button.textContent = 'تحلیل متن و آماده‌سازی';
 
-        throw new Error('پاسخ سرور: ' + response.status);
+          const message = error && error.message
+            ? error.message
+            : String(error || 'خطای نامشخص');
 
-      }
+          showStatus(
+            'تحلیل انجام نشد:\n' + message,
+            'error'
+          );
+        })
 
-      const result = await response.json();
+        .analyzeTissaVoiceTranscript({
+          pin: pin,
+          transcript: transcript
+        });
+    });
 
-      if (!result.ok) {
+    $('activity').addEventListener('change', function() {
 
-        throw new Error(result.error || 'تبدیل صدا ناموفق بود.');
-
-      }
-
-      $('transcript').value = result.text || '';
-
-      status(
-
-        'تبدیل صدا با موفقیت انجام شد. متن را بررسی و در صورت نیاز اصلاح کن.',
-
-        'success'
-
-      );
-
-    } catch (err) {
-
-      status(
-
-        'ارتباط با سرور یا تبدیل صدا ناموفق بود: ' +
-
-        (err.message || err) +
-
-        '\nاگر این خطا مربوط به دسترسی مرورگر باشد، باید روش ارتباط با Web App را اصلاح کنیم.',
-
-        'error'
-
-      );
-
-    } finally {
-
-      $('transcribeBtn').disabled = !audioBlob;
-
-      $('startBtn').disabled = false;
-
-    }
-
-  });
-
-  $('sendBtn').addEventListener('click', function () {
-
-    const text = $('transcript').value.trim();
-
-    if (!text) {
-
-      status('متنی برای ارسال وجود ندارد.', 'error');
-
-      return;
-
-    }
-
-    try {
-
-      if (window.opener && !window.opener.closed) {
-
-        window.opener.postMessage({
-
-          type: 'TISSA_VOICE_TRANSCRIPT',
-
-          text: text
-
-        }, '*');
-
-        status('متن به صفحه بازکننده ارسال شد.', 'success');
-
+      if (this.value === 'یادداشت') {
+        $('result').placeholder = 'برای یادداشت لازم نیست';
       } else {
+        $('result').placeholder = 'نتیجه را انتخاب یا تایپ کن';
+      }
+    });
 
-        status('این صفحه مستقل باز شده است. از دکمه کپی متن استفاده کن و متن را در صفحه تیسا قرار بده.', 'info');
+    // ثبت در CRM
+    $('entryForm').addEventListener('submit', function(event) {
 
+      event.preventDefault();
+
+      const runner = getAppsScriptRunner();
+
+      if (!runner) {
+        showStatus(
+          'این صفحه روی GitHub Pages باز شده است. ثبت مستقیم CRM از این صفحه هنوز به مسیر سروری Worker و Apps Script نیاز دارد؛ هیچ اطلاعاتی ثبت نشد.',
+          'error'
+        );
+        return;
       }
 
-    } catch (err) {
+      const pin = $('pin').value;
+      const customer = $('customer').value.trim();
+      const activity = $('activity').value;
+      const result = $('result').value.trim();
+      const details = $('details').value.trim();
+      const nextAction = $('nextAction').value.trim();
+      const nextDate = $('nextDate').value.trim();
 
-      status('ارسال مستقیم انجام نشد. از کپی متن استفاده کن.', 'error');
+      if (!pin || !customer || !details) {
+        showStatus(
+          'رمز، نام مشتری و شرح مکالمه را تکمیل کن.',
+          'error'
+        );
+        return;
+      }
 
-    }
+      if (
+        (activity === 'تماس' || activity === 'پیگیری') &&
+        !result
+      ) {
+        showStatus(
+          'برای تماس یا پیگیری، نتیجه را هم وارد کن.',
+          'error'
+        );
+        $('result').focus();
+        return;
+      }
 
-  });
+      const warning =
+        'آیا نام مشتری و همه اطلاعات را بررسی کرده‌ای؟\n\n' +
+        'مشتری: ' + customer + '\n' +
+        'فعالیت: ' + activity + '\n\n' +
+        'با تأیید، اطلاعات در CRM ذخیره می‌شود.';
 
-  $('copyBtn').addEventListener('click', async function () {
+      if (!window.confirm(warning)) return;
 
-    const text = $('transcript').value.trim();
+      const button = $('saveBtn');
 
-    if (!text) {
+      button.disabled = true;
+      button.textContent = 'در حال ثبت...';
 
-      status('متنی برای کپی وجود ندارد.', 'error');
-
-      return;
-
-    }
-
-    try {
-
-      await navigator.clipboard.writeText(text);
-
-      status('متن کپی شد.', 'success');
-
-    } catch (err) {
-
-      $('transcript').focus();
-
-      $('transcript').select();
-
-      const copied = document.execCommand('copy');
-
-      status(
-
-        copied
-
-          ? 'متن کپی شد.'
-
-          : 'متن انتخاب شد؛ از منوی گوشی گزینه Copy را انتخاب کن.',
-
-        copied ? 'success' : 'info'
-
+      showStatus(
+        'درخواست ثبت ارسال شد؛ دوباره روی ثبت نزن.',
+        'info'
       );
 
-    }
+      const payload = {
+        pin: pin,
+        customer: customer,
+        activity: activity,
+        result: result,
+        details: details,
+        nextAction: nextAction,
+        nextDate: nextDate
+      };
 
-  });
+      runner
+        .withSuccessHandler(function(response) {
 
-  window.addEventListener('beforeunload', releaseMicrophone);
+          button.disabled = false;
+          button.textContent = 'ثبت در CRM';
 
-})();
+          if (response && response.ok) {
 
-</script>
+            showStatus(
+              'ثبت با موفقیت انجام شد.\nمشتری: ' +
+              response.customer +
+              '\nتاریخ: ' + response.date,
+              'success'
+            );
 
+            $('transcript').value = '';
+            $('customer').value = '';
+            $('result').value = '';
+            $('details').value = '';
+            $('nextAction').value = '';
+            $('nextDate').value = '';
+
+            $('entryFields').style.display = 'none';
+
+          } else {
+
+            showStatus(
+              'پاسخ ثبت قابل تأیید نیست. وضعیت CRM را بررسی کن.',
+              'error'
+            );
+          }
+        })
+
+        .withFailureHandler(function(error) {
+
+          button.disabled = false;
+          button.textContent = 'ثبت در CRM';
+
+          const message = error && error.message
+            ? error.message
+            : String(error || 'خطای نامشخص');
+
+          showStatus(
+            'ثبت انجام نشد:\n' + message,
+            'error'
+          );
+        })
+
+        .saveTissaVoiceEntry(payload);
+    });
+
+    // پاک کردن فرم
+    $('clearBtn').addEventListener('click', function() {
+
+      if (!window.confirm('محتوای فرم پاک شود؟')) return;
+
+      $('transcript').value = '';
+      $('customer').value = '';
+      $('result').value = '';
+      $('details').value = '';
+      $('nextAction').value = '';
+      $('nextDate').value = '';
+
+      $('entryFields').style.display = 'none';
+
+      showStatus(
+        'فرم برای ثبت بعدی پاک شد.',
+        'info'
+      );
+    });
+
+  </script>
 </body>
-
 </html>
