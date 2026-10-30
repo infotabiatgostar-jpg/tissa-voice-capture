@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1769aa">
+  <title>ورودی صوتی تیسا</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 18px; background: #f5f6f8; color: #202124;
+      font-family: Arial, Tahoma, sans-serif; font-size: 16px; line-height: 1.8;
+    }
+    main { max-width: 680px; margin: 0 auto; }
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    p { margin: 0 0 14px; color: #5f6368; }
+    .panel { padding: 16px; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px #00000012; }
+    textarea { width: 100%; min-height: 190px; padding: 12px; border: 1px solid #c9cdd2; border-radius: 8px; font: inherit; line-height: 1.8; }
+    button { min-height: 48px; padding: 10px 14px; margin: 8px 0 0; border: 0; border-radius: 8px; font: inherit; font-weight: bold; cursor: pointer; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .primary { background: #1769aa; color: #fff; }
+    .danger { background: #b3261e; color: #fff; }
+    .secondary { background: #e8eaed; color: #202124; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    #status { padding: 10px; margin-top: 12px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .info { color: #174ea6; background: #e8f0fe; }
+    .success { color: #137333; background: #e6f4ea; }
+    .error { color: #b3261e; background: #fce8e6; }
+    .small { margin-top: 12px; font-size: 13px; color: #666; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ثبت گفتار تیسا</h1>
+    <p>روی «شروع صحبت» بزن، فارسی صحبت کن؛ بعد «پایان صحبت» و «ارسال متن به صفحه تیسا» را بزن.</p>
+    <section class="panel">
+      <div class="actions">
+        <button id="startBtn" class="primary" type="button">🎙 شروع صحبت</button>
+        <button id="stopBtn" class="danger" type="button" disabled>⏹ پایان صحبت</button>
+      </div>
+      <label for="transcript" style="display:block;font-weight:bold;margin:16px 0 6px">متن تشخیص‌داده‌شده</label>
+      <textarea id="transcript" placeholder="متن صحبتت اینجا نمایش داده می‌شود؛ می‌توانی اصلاحش کنی."></textarea>
+      <div class="actions">
+        <button id="sendBtn" class="primary" type="button">ارسال متن به صفحه تیسا</button>
+        <button id="copyBtn" class="secondary" type="button">کپی متن</button>
+      </div>
+      <div id="status" class="info" role="status" aria-live="polite">برای شروع، روی «شروع صحبت» بزن و اگر مرورگر اجازه خواست، Allow را انتخاب کن.</div>
+      <div class="small">این صفحه فقط گفتار را به متن تبدیل می‌کند. متن گزارش برای تحلیل و ذخیره در CRM به صفحه اصلی تیسا برمی‌گردد. اگر ارسال مستقیم ممکن نشد، «کپی متن» را بزن و آن را در کادر مکالمه صفحه تیسا بچسبان.</div>
+    </section>
+  </main>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let listening = false;
+  let finalText = '';
+
+  function status(message, type) {
+    $('status').textContent = message;
+    $('status').className = type || 'info';
+  }
+
+  function setListening(on) {
+    listening = on;
+    $('startBtn').disabled = on;
+    $('stopBtn').disabled = !on;
+    $('startBtn').textContent = on ? '🎙 در حال شنیدن...' : '🎙 شروع صحبت';
+  }
+
+  $('startBtn').addEventListener('click', function () {
+    if (!Recognition) {
+      status('این مرورگر تشخیص گفتار را پشتیبانی نمی‌کند. متن را در کادر وارد کن، یا دیکته صوتی صفحه‌کلید را امتحان کن.', 'error');
+      return;
+    }
+    if (listening) return;
+    finalText = $('transcript').value.trim();
+    if (finalText) finalText += ' ';
+    try {
+      recognition = new Recognition();
+      recognition.lang = 'fa-IR';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = function () {
+        setListening(true);
+        status('میکروفون فعال است؛ صحبت کن. پس از پایان، دکمه «پایان صحبت» را بزن.', 'success');
+      };
+
+      recognition.onresult = function (event) {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const part = (event.results[i][0].transcript || '').trim();
+          if (!part) continue;
+          if (event.results[i].isFinal) finalText += part + ' ';
+          else interim += part + ' ';
+        }
+        $('transcript').value = (finalText + interim).trim();
+      };
+
+      recognition.onerror = function (event) {
+        const map = {
+          'not-allowed': 'دسترسی میکروفون برای این صفحه مجاز نشد. تنظیمات مرورگر را بررسی کن.',
+          'service-not-allowed': 'سرویس تشخیص گفتار برای این صفحه مجاز نیست.',
+          'language-not-supported': 'سرویس تشخیص گفتار زبان فارسی را پشتیبانی نکرد.',
+          'network': 'خطای شبکه هنگام تبدیل گفتار به متن رخ داد.',
+          'no-speech': 'گفتاری دریافت نشد؛ دوباره تلاش کن.',
+          'audio-capture': 'میکروفون در دسترس نیست.'
+        };
+        if (event.error !== 'aborted') status(map[event.error] || ('خطای تشخیص گفتار: ' + event.error), 'error');
+      };
+
+      recognition.onend = function () {
+        setListening(false);
+        if ($('transcript').value.trim()) status('ضبط متوقف شد. متن را بررسی کن و سپس «ارسال متن به صفحه تیسا» را بزن.', 'success');
+      };
+
+      recognition.start();
+    } catch (err) {
+      setListening(false);
+      status('شروع تشخیص گفتار ممکن نشد: ' + (err.message || err), 'error');
+    }
+  });
+
+  $('stopBtn').addEventListener('click', function () {
+    if (recognition && listening) recognition.stop();
+  });
+
+  $('sendBtn').addEventListener('click', function () {
+    const text = $('transcript').value.trim();
+    if (!text) {
+      status('هنوز متنی وجود ندارد. ابتدا صحبت کن یا متن را وارد کن.', 'error');
+      return;
+    }
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({ type: 'TISSA_VOICE_TRANSCRIPT', text: text }, '*');
+        status('متن برای صفحه‌ای که این صفحه را باز کرده ارسال شد. به تب صفحه تیسا برگرد و متن را بررسی کن.', 'success');
+      } else {
+        status('صفحه اصلی تیسا به این پنجره متصل نیست. متن را با دکمه «کپی متن» کپی کن و در کادر مکالمه تیسا بچسبان.', 'info');
+      }
+    } catch (err) {
+      status('ارسال مستقیم انجام نشد. از «کپی متن» استفاده کن و متن را در تیسا بچسبان.', 'error');
+    }
+  });
+
+  $('copyBtn').addEventListener('click', async function () {
+    const text = $('transcript').value.trim();
+    if (!text) { status('متنی برای کپی‌کردن وجود ندارد.', 'error'); return; }
+    try {
+      await navigator.clipboard.writeText(text);
+      status('متن کپی شد؛ به صفحه تیسا برگرد و آن را در کادر مکالمه Paste کن.', 'success');
+    } catch (err) {
+      $('transcript').focus();
+      $('transcript').select();
+      const copied = document.execCommand('copy');
+      status(copied ? 'متن کپی شد؛ آن را در صفحه تیسا Paste کن.' : 'متن انتخاب شد؛ گزینه Copy را از منوی گوشی انتخاب کن.', copied ? 'success' : 'info');
+    }
+  });
+})();
+</script>
+</body>
+</html>
