@@ -798,109 +798,107 @@ function clearTissaVoiceEventId(eventId) {
       }
     );
 
-    // تحلیل متن
-    $('prepareBtn').addEventListener('click', function() {
+// تحلیل هوشمند متن از طریق Cloudflare Worker
+$('prepareBtn').addEventListener('click', async function() {
 
-      const transcript = $('transcript').value.trim();
-      const pin = $('pin').value;
+  const transcript = $('transcript').value.trim();
+  const pin = $('pin').value.trim();
 
-      if (!transcript) {
-        showStatus(
-          'ابتدا متن فارسی مکالمه را وارد کن.',
-          'error'
-        );
-        $('transcript').focus();
-        return;
+  if (!transcript) {
+    showStatus(
+      'ابتدا متن فارسی مکالمه را وارد کن.',
+      'error'
+    );
+    $('transcript').focus();
+    return;
+  }
+
+  if (!pin) {
+    showStatus(
+      'ابتدا رمز ورود را وارد کن.',
+      'error'
+    );
+    $('pin').focus();
+    return;
+  }
+
+  const button = $('prepareBtn');
+
+  button.disabled = true;
+  button.textContent = 'در حال تحلیل متن...';
+
+  showStatus(
+    'متن مکالمه در حال ارسال برای تحلیل هوشمند تیسا است...',
+    'info'
+  );
+
+  try {
+
+    const response = await callTissaWorker(
+      'VOICE_ANALYZE',
+      {
+        pin: pin,
+        transcript: transcript
       }
+    );
 
-      if (!pin) {
-        showStatus('ابتدا رمز ورود را وارد کن.', 'error');
-        $('pin').focus();
-        return;
-      }
+    if (!response || response.ok !== true) {
+      throw new Error(
+        response && response.error
+          ? response.error
+          : 'پاسخ تحلیل معتبر نیست.'
+      );
+    }
 
-      const runner = getAppsScriptRunner();
+    // انتقال نتیجه تحلیل به فرم
+    $('customer').value = response.customer || '';
+    $('activity').value = response.activity || '';
+    $('result').value = response.result || '';
+    $('details').value = response.details || transcript;
+    $('nextAction').value = response.nextAction || '';
+    $('nextDate').value = response.nextDate || '';
 
-      if (!runner) {
-        showStatus(
-          'تبدیل صدا از طریق GitHub و Cloudflare انجام می‌شود؛ اما تحلیل هوشمند و ثبت CRM هنوز به مسیر سروری جداگانه در Worker و Apps Script نیاز دارد. فعلاً متن را می‌توانی کپی کنی و در نسخه Apps Script ثبت کنی.',
-          'info'
-        );
-        return;
-      }
+    $('entryFields').style.display = 'block';
 
-      const button = $('prepareBtn');
-
-      button.disabled = true;
-      button.textContent = 'در حال تحلیل متن...';
+    if (
+      response.warnings &&
+      response.warnings.length
+    ) {
 
       showStatus(
-        'در حال استخراج اطلاعات از متن مکالمه...',
+        'تحلیل انجام شد؛ موارد زیر را بررسی و تکمیل کن:\n\n' +
+        '• ' + response.warnings.join('\n• '),
         'info'
       );
 
-      runner
-        .withSuccessHandler(function(response) {
+    } else {
 
-          button.disabled = false;
-          button.textContent = 'تحلیل متن و آماده‌سازی';
+      showStatus(
+        'تحلیل هوشمند انجام شد. اطلاعات را بررسی کن و در صورت صحت ثبت نهایی را بزن.',
+        'success'
+      );
+    }
 
-          if (!response || !response.ok) {
-            showStatus(
-              'پاسخ تحلیل قابل تأیید نیست. دوباره تلاش کن.',
-              'error'
-            );
-            return;
-          }
+    $('customer').focus();
 
-          $('customer').value = response.customer || '';
-          $('activity').value = response.activity || '';
-          $('result').value = response.result || '';
-          $('details').value = response.details || transcript;
-          $('nextAction').value = response.nextAction || '';
-          $('nextDate').value = response.nextDate || '';
+  } catch (error) {
 
-          $('entryFields').style.display = 'block';
+    const message = error && error.message
+      ? error.message
+      : String(error || 'خطای نامشخص');
 
-          if (response.warnings && response.warnings.length) {
+    showStatus(
+      'تحلیل انجام نشد:\n' + message,
+      'error'
+    );
 
-            showStatus(
-              'تحلیل اولیه انجام شد. موارد زیر را بررسی و تکمیل کن:\n\n' +
-              '• ' + response.warnings.join('\n• '),
-              'info'
-            );
+  } finally {
 
-          } else {
+    button.disabled = false;
+    button.textContent = 'تحلیل متن و آماده‌سازی';
+  }
 
-            showStatus(
-              'اطلاعات استخراج شد. همه فیلدها را بررسی کن؛ سپس در صورت صحت ثبت کن.',
-              'success'
-            );
-          }
-
-          $('customer').focus();
-        })
-
-        .withFailureHandler(function(error) {
-
-          button.disabled = false;
-          button.textContent = 'تحلیل متن و آماده‌سازی';
-
-          const message = error && error.message
-            ? error.message
-            : String(error || 'خطای نامشخص');
-
-          showStatus(
-            'تحلیل انجام نشد:\n' + message,
-            'error'
-          );
-        })
-
-        .analyzeTissaVoiceTranscript({
-          pin: pin,
-          transcript: transcript
-        });
-    });
+});
 
     $('activity').addEventListener('change', function() {
 
