@@ -1,16 +1,343 @@
-آزمایش مکالمه زنده فارسی تیسا
-اتصال مستقیم صوتی دوطرفه به 1xAI Realtime — بدون ثبت در CRM و بدون تماس تلفنی
-این صفحه فقط برای تست صداست. از هدفون استفاده کن تا صدای دستیار دوباره وارد میکروفون نشود. صدای این آزمایش در CRM ذخیره نمی‌شود؛ متن مکالمه فقط روی همین صفحه نمایش داده می‌شود.
-وضعیت اتصال
-رمز ثبت صوتی تیسا
-برای شروع، رمز ثبت صوتی را وارد و دکمه مکالمه را بزن.
+Skip to content
 
-میکروفون هنوز فعال نشده است.
-🎙 شروع مکالمه زنده
-⏹ پایان مکالمه
-پاک‌کردن متن مکالمه
-متن زنده مکالمه
-پس از شروع، متن صحبت‌های تو و پاسخ‌های دستیار در این قسمت ظاهر می‌شود.
-موضوع پیشنهادی برای آزمایش
-بعد از اتصال بگو: «سلام، من شایان هستم. می‌خواهم درباره هماهنگی تولید پنج تن سویا با تولیدکننده صحبت کنم. چه اطلاعاتی باید از او بگیرم؟»
-مدل آزمایشی: gpt-realtime-mini | صدای خروجی: alloy | زبان مکالمه: فارسی
+
+ChatGPT
+
+New chat
+Images
+Scheduled
+Library
+Plugins
+Codex
+Explore
+Projects
+
+
+BI
+
+
+
+
+تولید و QC
+
+
+
+
+مالی و حسابداری
+
+
+
+
+بازاریابی
+
+
+
+
+فروش و CRM
+
+
+
+Recents
+
+بررسی ثبت تماس آزمایشی
+
+
+اتصال ثبت مکالمه CRM
+
+
+ارسال کد HTML تیسا
+
+
+محاسبه گراماژ لمینت
+
+
+آپلود و ثبت ایندکس
+
+
+فعال‌سازی میکروفون مرورگر
+
+
+اصلاح VoiceForm Apps Script
+
+
+رد فوري
+
+
+نتایج انتخابات اسرائیل
+
+
+صحبت به فارسی
+
+
+صحبت به فارسی
+
+
+تشخیص پلاک و خودرو
+
+
+کاهش حجم ویدیو
+
+
+متن پیگیری مشتری
+
+
+نکته فنی تولید محتوا
+
+
+
+
+
+
+info tabiatgostarFree
+Upgrade
+
+
+
+
+
+
+
+
+
+Upgrade
+Share
+
+
+
+
+
+
+You said:You
+function doPost(e) { try { if (!e || !e.postData || !e.postData.contents) { return tissaVoiceJson_({ ok: false, error: 'POST body خالی است.' }); } const payload = JSON.parse(e.postData.contents); const voiceEventTypes = [ 'VOICE_TRANSCRIBE', 'VOICE_ANALYZE', 'VOICE_SAVE', 'VOICE_REALTIME_TOKEN' ]; // احراز هویت مستقل فرم صوتی if (voiceEventTypes.indexOf(payload.eventType) !== -1) { const expectedVoiceToken = PropertiesService .getScriptProperties() .getProperty('TISSA_VOICE_TOKEN'); if ( !expectedVoiceToken || payload.voiceToken !== expectedVoiceToken ) { return tissaVoiceJson_({ ok: false, error: 'دسترسی فرم صوتی مجاز نیست.' }); } delete payload.voiceToken; if (payload.eventType === 'VOICE_REALTIME_TOKEN') { return tissaVoiceJson_( createTissaRealtimeClientSecret_(payload) ); } // تبدیل صدا به متن if (payload.eventType === 'VOICE_TRANSCRIBE') { return tissaVoiceJson_( transcribeTissaAudio(payload) ); } // تحلیل هوشمند متن if (payload.eventType === 'VOICE_ANALYZE') { return tissaVoiceJson_( analyzeTissaVoiceTranscriptAI(payload) ); } // ثبت نهایی اطلاعات if (payload.eventType === 'VOICE_SAVE') { if (!String(payload.eventId || '').trim()) { return tissaVoiceJson_({ ok: false, error: 'eventId برای ثبت صوتی الزامی است.' }); } const saved = saveTissaVoiceEntry(payload); if (saved && saved.ok) { try { refreshTissaOutputs( getTissaVoiceSpreadsheet_() ); } catch (refreshErr) { Logger.log( 'TISSA outputs refresh failed: ' + String(refreshErr) ); } } return tissaVoiceJson_(saved); } } // مسیرهای قبلی CRM و تماس عملیاتی const expectedToken = PropertiesService .getScriptProperties() .getProperty('OPERATIONAL_WEBHOOK_TOKEN'); if ( !expectedToken || payload.webhookToken !== expectedToken ) { return tissaVoiceJson_({ ok: false, error: 'Unauthorized' }); } delete payload.webhookToken; let result = null; if (payload.eventType === 'VOICE_ACTIVITY') { result = registerVoiceActivity(payload); } else if (payload.eventType === 'OPERATIONAL_CALL') { result = registerOperationalCallResult(payload); } else if (payload.eventType === 'VOICE_BATCH') { result = registerVoiceBatch(payload); } else { return tissaVoiceJson_({ ok: false, error: 'eventType نامعتبر است.' }); } try { refreshTissaOutputs(); } catch (refreshErr) { Logger.log( 'TISSA outputs refresh failed: ' + String(refreshErr) ); } return tissaVoiceJson_(result); } catch (err) { Logger.log(
+…
+Show more
+
+ChatGPT said:ChatGPT
+کدی که فرستادی را بررسی کردم. قسمت مربوط به اتصال Realtime را درست در محل مناسب قرار داده‌ای. ✅
+سه مورد مهم درست انجام شده است:
+	1	VOICE_REALTIME_TOKEN به فهرست رویدادهای مجاز اضافه شده.  
+	2	احراز هویت TISSA_VOICE_TOKEN قبل از اجرای درخواست انجام می‌شود.  
+	3	درخواست VOICE_REALTIME_TOKEN بعد از حذف توکن و قبل از مسیرهای تبدیل صدا و تحلیل متن قرار گرفته است.  
+این قسمت از کدت درست است و نیازی به تغییر ندارد:
+JavaScript
+
+delete payload.voiceToken;
+
+if (payload.eventType === 'VOICE_REALTIME_TOKEN') {
+  return tissaVoiceJson_(
+    createTissaRealtimeClientSecret_(payload)
+  );
+}
+حالا برویم سراغ مرحله بعد:
+در انتهای فایل Code.gs، بعد از آخرین تابع موجود، تابع createTissaRealtimeClientSecret_ را که در پیام قبلی فرستادم اضافه کن.
+فقط دو نکته:
+	•	تابع جدید را داخل تابع doPost نگذار؛ باید یک تابع مستقل در سطح اصلی فایل باشد.  
+	•	کدهای فعلی doPost و بخش catch انتهای آن را تغییر نده.  
+بعد از اضافه کردن تابع، ذخیره کن و پیام یا تصویر کد را بفرست تا قبل از انتشار نسخه جدید، بررسی نهایی انجام بدهیم.
+
+
+This might also interest you.
+￼
+ELEKS
+Leistungen zur KI-Implementierung
+Integration, PoC, Produktion und Skalierung.
+Ad
+Ad options
+
+
+You said:You
+function findTissaVoiceEventLogRow_(log, eventId, eventIdColumn) { const lastRow = log.getLastRow(); if (lastRow < 2) return 0; const ids = log.getRange( 2, eventIdColumn, lastRow - 1, 1 ).getDisplayValues(); for (let i = 0; i < ids.length; i++) { if (String(ids[i][0] || '').trim() === eventId) { return i + 2; } } return 0; } /** * دریافت کلید موقت اتصال صوتی از 1xAI * این کلید فقط برای ایجاد اتصال Realtime استفاده می‌شود. */ function createTissaRealtimeClientSecret_(data) { // 1. بررسی اطلاعات ورودی if (!data || !data.pin) { throw new Error('رمز ورود ارسال نشده است.'); } // 2. بررسی PIN const savedPin = PropertiesService .getScriptProperties() .getProperty('TISSA_VOICE_PIN'); if (!savedPin || String(data.pin) !== String(savedPin)) { throw new Error('رمز ورود صحیح نیست.'); } // 3. دریافت کلید اصلی 1xAI از Script Properties const apiKey = PropertiesService .getScriptProperties() .getProperty('1XAI_API_KEY'); if (!apiKey) { throw new Error('کلید 1xAI در تنظیمات اسکریپت ثبت نشده است.'); } // 4. ارسال درخواست به 1xAI const url = 'https://1xai.ir/v1/realtime/client_secret'; const response = UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', headers: { Authorization: 'Bearer ' + apiKey }, payload: JSON.stringify({ model: 'gpt-realtime-mini' }), muteHttpExceptions: true }); // 5. بررسی پاسخ سرور const statusCode = response.getResponseCode(); const responseText = response.getContentText(); if (statusCode < 200 || statusCode >= 300) { throw new Error( 'خطا در دریافت کلید اتصال 1xAI. کد پاسخ: ' + statusCode + ' - ' + responseText ); } // 6. تبدیل پاسخ به JSON let result; try { result = JSON.parse(responseText); } catch (error) { throw new Error('پاسخ دریافتی از 1xAI معتبر نیست.'); } // 7. بررسی کلید موقت if ( !result || !result.client_secret || !result.client_secret.value ) { throw new Error('کلید موقت اتصال صوتی در پاسخ 1xAI وجود ندارد.'); } // 8. بررسی آدرس اتصال if (result.url !== 'wss://1xai.ir/rt/voice') { throw new Error('آدرس اتصال Realtime معتبر نیست.'); } // 9. بازگرداندن اطلاعات اتصال به صفحه صوتی return { ok: true, client_secret: result.client_secret, model: result.model, url: result.url }; }
+…
+Show more
+
+ChatGPT said:ChatGPT
+عالیه. این قسمت را بررسی کردم؛ تابع جدید را درست و در محل صحیح اضافه کرده‌ای. ✅
+سه نکته را تأیید می‌کنم:
+	•	تابع findTissaVoiceEventLogRow_ درست بسته شده است.  
+	•	تابع createTissaRealtimeClientSecret_ مستقل است و داخل تابع دیگری قرار نگرفته.  
+	•	نام کلید API، آدرس درخواست و مدل gpt-realtime-mini با تنظیمات اتصال موردنظر هماهنگ هستند.  
+یک اصلاح کوچک امنیتی
+در بخش بررسی پاسخ سرور، بهتر است متن خام پاسخ را به کاربر برنگردانیم.
+این قسمت:
+JavaScript
+
+if (statusCode < 200 || statusCode >= 300) {
+  throw new Error(
+    'خطا در دریافت کلید اتصال 1xAI. کد پاسخ: ' +
+    statusCode +
+    ' - ' +
+    responseText
+  );
+}
+با این نسخه جایگزین شود:
+JavaScript
+
+if (statusCode < 200 || statusCode >= 300) {
+  Logger.log(
+    '1xAI Realtime error. HTTP status: ' + statusCode
+  );
+
+  throw new Error(
+    'خطا در دریافت کلید اتصال 1xAI. کد پاسخ: ' +
+    statusCode
+  );
+}
+این تغییر صرفاً برای جلوگیری از نمایش اطلاعات احتمالی داخل پاسخ سرور است.
+مرحله بعد
+	1	کلیدهای Ctrl + S را بزن تا کد ذخیره شود.  
+	2	فعلاً تابع را دستی اجرا نکن؛ چون برای اجرا به PIN معتبر نیاز دارد.  
+	3	قبل از انتشار نسخه جدید، باید تغییر کوچک Cloudflare Worker را هم انجام بدهیم تا رویداد VOICE_REALTIME_TOKEN را عبور دهد.  
+اصلاح Google Apps Script تأیید شد
+حالا کد را ذخیره کن. مرحله بعدی را در Cloudflare Worker انجام می‌دهیم؛ هنوز Deploy نهایی نکن.
+
+
+You said:You
+شد
+
+ChatGPT said:ChatGPT
+خوب، پس اصلاح Google Apps Script انجام شد. حالا می‌رویم سراغ Cloudflare Worker تا درخواست اتصال صوتی را به Google Apps Script منتقل کند.
+مرحله ۱: ورود به Cloudflare
+	1	وارد سایت Cloudflare شو.  
+	2	وارد حساب کاربری‌ات شو.  
+	3	از منوی سمت چپ وارد Workers & Pages شو.  
+	4	روی Worker تیسا با این نام کلیک کن:  
+royal-surf-a674
+5. وارد بخش Edit code شو.
+مرحله ۲: پیدا کردن فهرست رویدادهای مجاز
+در کد Worker کلیدهای Ctrl + F را بزن و این عبارت را جست‌وجو کن:
+JavaScript
+
+allowedEvents
+باید بخشی شبیه این پیدا کنی:
+JavaScript
+
+const allowedEvents = [
+  "VOICE_TRANSCRIBE",
+  "VOICE_ANALYZE",
+  "VOICE_SAVE"
+];
+مرحله ۳: اصلاح کد
+کل این قسمت را با کد زیر جایگزین کن:
+JavaScript
+
+const allowedEvents = [
+  "VOICE_TRANSCRIBE",
+  "VOICE_ANALYZE",
+  "VOICE_SAVE",
+  "VOICE_REALTIME_TOKEN"
+];
+تغییر موردنیاز Worker
+دقت کن: هیچ قسمت دیگری از Worker را تغییر نده. مخصوصاً بخش‌های مربوط به TISSA_VOICE_TOKEN، آدرس Google Apps Script و ارسال درخواست به GAS باید بدون تغییر باقی بمانند.
+مرحله ۴: ذخیره و انتشار
+1. کد را ذخیره کن.
+2. روی Deploy کلیک کن تا نسخه جدید Worker منتشر شود.
+3. بعد از انتشار، فعلاً صفحه را نبند.
+وقتی این مرحله تمام شد، فقط بنویس «شد».
+بعد از آن سراغ بارگذاری فایل realtime.html در GitHub می‌رویم و اتصال صوتی فارسی را آزمایش می‌کنیم.
+
+
+Für KI-Entwicklung von der Idee bis zur Integration gibt’s hier ein Angebot.
+￼
+ELEKS
+End-to-End KI-Entwicklung
+Von der Idee bis zum Support: KI-Lösungen aus einer Hand.
+Ad
+Ad options
+
+
+You said:You
+شد
+
+ChatGPT said:ChatGPT
+عالی. ✅ حالا نوبت اضافه کردن صفحه آزمایش مکالمه زنده به GitHub است.
+مرحله ۱: دریافت فایل صفحه صوتی
+این فایل آماده است:
+دریافت فایل realtime.html
+روی لینک کلیک کن و فایل را در کامپیوتر ذخیره کن. نام فایل باید دقیقاً realtime.html باشد.
+مرحله ۲: ورود به مخزن GitHub
+این آدرس را باز کن:
+مخزن tissa-voice-capture در GitHub
+مرحله ۳: بارگذاری فایل
+1. مطمئن شو در شاخه main هستی.
+2. روی Add file کلیک کن.
+3. گزینه Upload files را انتخاب کن.
+4. فایل realtime.html را از کامپیوتر انتخاب کن یا داخل صفحه بکش و رها کن.
+5. دقت کن فایل در ریشه مخزن قرار بگیرد؛ یعنی کنار index.html باشد، نه داخل پوشه دیگری.
+
+
+
+
+hackr.io
+مرحله ۴: ثبت فایل
+پایین صفحه:
+1. روی Commit changes کلیک کن.
+2. در پنجره بازشده هم دوباره Commit changes را بزن.
+بعد از ثبت، آدرس صفحه آزمایش این خواهد بود:
+https://infotabiatgostar-jpg.github.io/tissa-voice-capture/realtime.html
+فعلاً فقط فایل را بارگذاری کن و آدرس را باز نکن. بعد از اینکه گفتی «شد»، نسخه جدید Google Apps Script را منتشر می‌کنیم و سپس اتصال صوتی را آزمایش خواهیم کرد.
+
+realtime.htmlHTMLOpen file
+
+This might also interest you.
+￼
+ElevenAgents
+Get the API key
+See transparent API pricing and start in minutes.
+Ad
+Ad options
+
+
+You said:You
+نمیتونم فایل realtime.html دانلود کنم
+
+Worked for 24s
+ChatGPT said:ChatGPT
+اشکالی ندارد. فایل را بررسی کردم؛ سالم است. دو نسخه جایگزین آماده کردم:
+	1	دانلود مستقیم فایل HTML تیسا  
+	2	دانلود فایل ZIP (نسخه فشرده)  
+پیشنهاد من: ابتدا لینک اول را امتحان کن. روی آن کلیک کن تا فایل دانلود شود.
+اگر باز هم دانلود نشد، روی لینک راست‌کلیک کن و گزینه Save link as را انتخاب کن.
+نام فایل پس از دانلود باید tissa-realtime-test.html باشد. هنگام بارگذاری در GitHub نام آن را به realtime.html تغییر بده.
+اگر هر دو لینک مشکل داشتند، بگو دقیقاً چه اتفاقی می‌افتد تا روش دیگری را پیش ببریم.
+
+tissa-realtime-test.htmlHTMLOpen file
+
+This might also interest you.
+￼
+SURFSKY
+Web Unblocked, No More 403. Cloud Headless
+Getting 403s at scale? Cloud headless, native C++. $5 credit.
+Ad
+Ad options
+
+
+
+
+ChatGPT can make mistakes. Check important info.
+
+
+
+
+Latest response
+
+
+
+
+
+
+
+Think
+
+
+
+
+
+
+
+
+
+Response complete
+
+
+
+
