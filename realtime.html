@@ -237,35 +237,42 @@ async function start(){
     socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
-      connected=true;
-      $("stop").disabled=false;
-      status("متصل شد؛ صحبت کنید.");
+  connected = true;
+  $("stop").disabled = false;
+  status("متصل شد؛ صحبت کنید.");
 
-      socket.send(JSON.stringify({
-        type:"session.update",
-        session:{
-          instructions:
-            "تو دستیار صوتی فارسی شرکت تیسا هستی. " +
-            "فقط به زبان فارسی روان و طبیعی صحبت کن. " +
-            "پاسخ‌ها کوتاه، دقیق و محترمانه باشند. " +
-            "در این آزمایش فقط مکالمه انجام بده و ادعا نکن " +
-            "که سفارشی ثبت یا تغییری در CRM ایجاد کرده‌ای.",
-          input_audio_format:"pcm16",
-          input_audio_transcription:{
-            model:"whisper-1",
-            language:"fa"
+  socket.send(JSON.stringify({
+    type: "session.update",
+    session: {
+      type: "realtime",
+      instructions:
+        "تو دستیار صوتی فارسی شرکت تیسا هستی. " +
+        "فقط به زبان فارسی روان و طبیعی صحبت کن. " +
+        "پاسخ‌ها کوتاه، دقیق و محترمانه باشند. " +
+        "در این آزمایش فقط مکالمه انجام بده و ادعا نکن " +
+        "که سفارشی ثبت یا تغییری در CRM ایجاد کرده‌ای.",
+      audio: {
+        input: {
+          format: "pcm16",
+          transcription: {
+            model: "whisper-1",
+            language: "fa"
           },
-          turn_detection:{
-            type:"server_vad",
-            interrupt_response:true
-          },
-          output_audio_format:"pcm16",
-          voice:"alloy"
+          turn_detection: {
+            type: "server_vad",
+            interrupt_response: true
+          }
+        },
+        output: {
+          format: "pcm16",
+          voice: "alloy"
         }
-      }));
+      }
+    }
+  }));
 
-      startMicrophoneProcessing();
-    };
+  startMicrophoneProcessing();
+};
 
     socket.onmessage = event => {
       const data = JSON.parse(event.data);
