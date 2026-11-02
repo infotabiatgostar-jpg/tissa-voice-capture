@@ -905,131 +905,154 @@ $('prepareBtn').addEventListener('click', async function() {
       if (this.value === 'یادداشت') {
         $('result').placeholder = 'برای یادداشت لازم نیست';
       } else {
-        $('result').placeholder = 'نتیجه را انتخاب یا تایپ کن';
-      }
-    });
+        $('result').placeholder = 'نتیجه را انتخاب یا تایپ 
 
-    // ثبت در CRM
-    $('entryForm').addEventListener('submit', function(event) {
+       
+// ثبت نهایی در CRM از طریق Cloudflare Worker
+$('entryForm').addEventListener('submit', async function(event) {
 
-      event.preventDefault();
+  event.preventDefault();
 
-      const runner = getAppsScriptRunner();
+  const pin = $('pin').value.trim();
+  const customer = $('customer').value.trim();
+  const activity = $('activity').value;
+  const result = $('result').value.trim();
+  const details = $('details').value.trim();
+  const nextAction = $('nextAction').value.trim();
+  const nextDate = $('nextDate').value.trim();
 
-      if (!runner) {
-        showStatus(
-          'این صفحه روی GitHub Pages باز شده است. ثبت مستقیم CRM از این صفحه هنوز به مسیر سروری Worker و Apps Script نیاز دارد؛ هیچ اطلاعاتی ثبت نشد.',
-          'error'
-        );
-        return;
-      }
+  if (!pin || !customer || !details || !activity) {
+    showStatus(
+      'رمز، نام مشتری، نوع فعالیت و شرح مکالمه را تکمیل کن.',
+      'error'
+    );
+    return;
+  }
 
-      const pin = $('pin').value;
-      const customer = $('customer').value.trim();
-      const activity = $('activity').value;
-      const result = $('result').value.trim();
-      const details = $('details').value.trim();
-      const nextAction = $('nextAction').value.trim();
-      const nextDate = $('nextDate').value.trim();
+  if (
+    (activity === 'تماس' || activity === 'پیگیری') &&
+    !result
+  ) {
+    showStatus(
+      'برای تماس یا پیگیری، نتیجه را هم وارد کن.',
+      'error'
+    );
+    $('result').focus();
+    return;
+  }
 
-      if (!pin || !customer || !details) {
-        showStatus(
-          'رمز، نام مشتری و شرح مکالمه را تکمیل کن.',
-          'error'
-        );
-        return;
-      }
+  const warning =
+    'آیا نام مشتری و همه اطلاعات را بررسی کرده‌ای؟\n\n' +
+    'مشتری: ' + customer + '\n' +
+    'فعالیت: ' + activity + '\n' +
+    'نتیجه: ' + result + '\n\n' +
+    'با تأیید، اطلاعات در CRM ذخیره می‌شود.';
 
-      if (
-        (activity === 'تماس' || activity === 'پیگیری') &&
-        !result
-      ) {
-        showStatus(
-          'برای تماس یا پیگیری، نتیجه را هم وارد کن.',
-          'error'
-        );
-        $('result').focus();
-        return;
-      }
+  if (!window.confirm(warning)) return;
 
-      const warning =
-        'آیا نام مشتری و همه اطلاعات را بررسی کرده‌ای؟\n\n' +
-        'مشتری: ' + customer + '\n' +
-        'فعالیت: ' + activity + '\n\n' +
-        'با تأیید، اطلاعات در CRM ذخیره می‌شود.';
+  const button = $('saveBtn');
 
-      if (!window.confirm(warning)) return;
+  button.disabled = true;
+  button.textContent = 'در حال ثبت...';
 
-      const button = $('saveBtn');
+  const payload = {
+    pin: pin,
+    customer: customer,
+    activity: activity,
+    result: result,
+    details: details,
+    nextAction: nextAction,
+    nextDate: nextDate
+  };
 
-      button.disabled = true;
-      button.textContent = 'در حال ثبت...';
+  let eventId = '';
+
+  try {
+
+    showStatus(
+      'در حال آماده‌سازی ثبت یکتا...',
+      'info'
+    );
+
+    // شناسه در صورت تلاش مجدد برای همین اطلاعات حفظ می‌شود.
+    eventId = await getTissaVoiceEventId(payload);
+
+    showStatus(
+      'درخواست ثبت به سرور تیسا ارسال شد. لطفاً صفحه را نبند.',
+      'info'
+    );
+
+    const response = await callTissaWorker(
+      'VOICE_SAVE',
+      Object.assign({}, payload, {
+        eventId: eventId
+      })
+    );
+
+    if (!response || response.ok !== true) {
+      throw new Error(
+        response && response.error
+          ? response.error
+          : 'پاسخ ثبت معتبر نیست.'
+      );
+    }
+
+    // فقط پس از دریافت پاسخ موفق، شناسه پاک می‌شود.
+    clearTissaVoiceEventId(eventId);
+
+    if (response.duplicate) {
 
       showStatus(
-        'درخواست ثبت ارسال شد؛ دوباره روی ثبت نزن.',
-        'info'
+        'این فعالیت قبلاً ثبت شده بود؛ ردیف تکراری ایجاد نشد.\n' +
+        'اطلاعات CRM و Agent دوباره همگام‌سازی شد.\n' +
+        'مشتری: ' + response.customer +
+        '\nتاریخ: ' + response.date,
+        'success'
       );
 
-      const payload = {
-        pin: pin,
-        customer: customer,
-        activity: activity,
-        result: result,
-        details: details,
-        nextAction: nextAction,
-        nextDate: nextDate
-      };
+    } else {
 
-      runner
-        .withSuccessHandler(function(response) {
+      showStatus(
+        'ثبت با موفقیت انجام شد.\n' +
+        'مشتری: ' + response.customer +
+        '\nتاریخ: ' + response.date,
+        'success'
+      );
+    }
 
-          button.disabled = false;
-          button.textContent = 'ثبت در CRM';
+    // پاک‌سازی فرم پس از ثبت موفق
+    $('transcript').value = '';
+    $('customer').value = '';
+    $('activity').value = '';
+    $('result').value = '';
+    $('details').value = '';
+    $('nextAction').value = '';
+    $('nextDate').value = '';
 
-          if (response && response.ok) {
+    $('entryFields').style.display = 'none';
 
-            showStatus(
-              'ثبت با موفقیت انجام شد.\nمشتری: ' +
-              response.customer +
-              '\nتاریخ: ' + response.date,
-              'success'
-            );
+  } catch (error) {
 
-            $('transcript').value = '';
-            $('customer').value = '';
-            $('result').value = '';
-            $('details').value = '';
-            $('nextAction').value = '';
-            $('nextDate').value = '';
+    const message = error && error.message
+      ? error.message
+      : String(error || 'خطای نامشخص');
 
-            $('entryFields').style.display = 'none';
+    showStatus(
+      'ثبت تأیید نشد:\n' +
+      message +
+      '\n\nفرم را پاک نکن. شناسه ثبت برای تلاش مجدد حفظ شده است. ' +
+      'در صورت نامشخص بودن نتیجه، ابتدا Activity Log را بررسی کن.',
+      'error'
+    );
 
-          } else {
+  } finally {
 
-            showStatus(
-              'پاسخ ثبت قابل تأیید نیست. وضعیت CRM را بررسی کن.',
-              'error'
-            );
-          }
-        })
+    button.disabled = false;
+    button.textContent = 'ثبت در CRM';
+  }
 
-        .withFailureHandler(function(error) {
+});
 
-          button.disabled = false;
-          button.textContent = 'ثبت در CRM';
-
-          const message = error && error.message
-            ? error.message
-            : String(error || 'خطای نامشخص');
-
-          showStatus(
-            'ثبت انجام نشد:\n' + message,
-            'error'
-          );
-        })
-
-        .saveTissaVoiceEntry(payload);
-    });
 
     // پاک کردن فرم
     $('clearBtn').addEventListener('click', function() {
