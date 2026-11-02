@@ -230,16 +230,199 @@
 
     const $ = id => document.getElementById(id);
 
-    function getAppsScriptRunner() {
-      if (
-        window.google &&
-        window.google.script &&
-        window.google.script.run
-      ) {
-        return window.google.script.run;
-      }
-      return null;
+    const TISSA_PENDING_SAVE_KEY = 'tissa_pending_voice_save_v1';
+let tissaPendingSaveMemory = null;
+
+
+// ارسال درخواست به Cloudflare Worker
+async function callTissaWorker(eventType, payload) {
+
+  const response = await fetch(API_URL, {
+    method: 'POST',
+
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+
+    body: JSON.stringify(
+      Object.assign({}, payload, {
+        eventType: eventType
+      })
+    ),
+
+    cache: 'no-store',
+    credentials: 'omit'
+  });
+
+  const responseText = await response.text();
+
+  let result;
+
+  try {
+    result = JSON.parse(responseText);
+  } catch (err) {
+    throw new Error(
+      'پاسخ سرور معتبر نیست. کد وضعیت: ' + response.status
+    );
+  }
+
+  if (!response.ok || !result || result.ok !== true) {
+    throw new Error(
+      result && result.error
+        ? result.error
+        : 'ارتباط با سرور تیسا ناموفق بود.'
+    );
+  }
+
+  return result;
+}
+
+
+// تولید شناسه یکتای ثبت
+function createTissaVoiceEventId() {
+
+  if (
+    window.crypto &&
+    typeof window.crypto.randomUUID === 'function'
+  ) {
+    return window.crypto.randomUUID();
+  }
+
+  return 'TISSA-' +
+    Date.now() + '-' +
+    Math.random().toString(36).substring(2);
+}
+
+
+// حفظ شناسه برای تلاش مجدد همان ثبت
+async function getTissaVoiceEventId(payload) {
+
+  const signature = JSON.stringify(payload);
+
+  let fingerprint = '';
+
+  try {
+
+    if (
+      window.crypto &&
+      window.crypto.subtle &&
+      window.TextEncoder
+    ) {
+
+      const bytes =
+        new TextEncoder().encode(signature);
+
+      const hash =
+        await window.crypto.subtle.digest(
+          'SHA-256',
+          bytes
+        );
+
+      fingerprint =
+        Array.from(new Uint8Array(hash))
+          .map(function(b) {
+            return b.toString(16).padStart(2, '0');
+          })
+          .join('');
     }
+
+  } catch (err) {
+    fingerprint = '';
+  }
+
+
+  if (fingerprint) {
+
+    try {
+
+      const saved =
+        JSON.parse(
+          localStorage.getItem(TISSA_PENDING_SAVE_KEY) || 'null'
+        );
+
+      if (
+        saved &&
+        saved.fingerprint === fingerprint &&
+        saved.eventId
+      ) {
+
+        tissaPendingSaveMemory = {
+          signature: signature,
+          eventId: saved.eventId
+        };
+
+        return saved.eventId;
+      }
+
+    } catch (err) {
+      // در صورت نبود دسترسی به حافظه مرورگر،
+      // از حافظه موقت صفحه استفاده می‌کنیم.
+    }
+  }
+
+
+  if (
+    tissaPendingSaveMemory &&
+    tissaPendingSaveMemory.signature === signature
+  ) {
+    return tissaPendingSaveMemory.eventId;
+  }
+
+
+  const eventId = createTissaVoiceEventId();
+
+  tissaPendingSaveMemory = {
+    signature: signature,
+    eventId: eventId
+  };
+
+
+  if (fingerprint) {
+
+    try {
+
+      localStorage.setItem(
+        TISSA_PENDING_SAVE_KEY,
+        JSON.stringify({
+          fingerprint: fingerprint,
+          eventId: eventId
+        })
+      );
+
+    } catch (err) {
+      // شناسه همچنان در حافظه موقت صفحه حفظ می‌شود.
+    }
+  }
+
+  return eventId;
+}
+
+
+// پاک کردن شناسه بعد از ثبت موفق
+function clearTissaVoiceEventId(eventId) {
+
+  if (
+    tissaPendingSaveMemory &&
+    tissaPendingSaveMemory.eventId === eventId
+  ) {
+    tissaPendingSaveMemory = null;
+  }
+
+  try {
+
+    const saved =
+      JSON.parse(
+        localStorage.getItem(TISSA_PENDING_SAVE_KEY) || 'null'
+      );
+
+    if (saved && saved.eventId === eventId) {
+      localStorage.removeItem(TISSA_PENDING_SAVE_KEY);
+    }
+
+  } catch (err) {
+    // خطای حافظه مرورگر نباید نتیجه ثبت را تغییر دهد.
+  }
+}
 
     function showStatus(message, type) {
       const box = $('status');
