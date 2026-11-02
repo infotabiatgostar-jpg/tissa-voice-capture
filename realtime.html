@@ -292,7 +292,7 @@ async function start(){
         log("دستیار تیسا: " + (data.transcript || ""));
       }
 
-      if(data.type === "response.audio.delta"){
+      if(data.type === "response.output_audio.delta"){
         playAudio(data.delta);
       }
 
