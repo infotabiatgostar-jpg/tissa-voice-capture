@@ -901,10 +901,13 @@ $('prepareBtn').addEventListener('click', async function() {
 
     $('activity').addEventListener('change', function() {
 
-      if (this.value === 'یادداشت') {
-        $('result').placeholder = 'برای یادداشت لازم نیست';
-      } else {
-        $('result').placeholder = 'نتیجه را انتخاب یا تایپ 
+  if (this.value === 'یادداشت') {
+    $('result').placeholder = 'برای یادداشت لازم نیست';
+  } else {
+    $('result').placeholder = 'نتیجه را انتخاب یا تایپ کن';
+  }
+
+});
 
        
 // ثبت نهایی در CRM از طریق Cloudflare Worker
